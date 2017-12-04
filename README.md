@@ -38,4 +38,4 @@ Resources used in each region are as follows:
 ![AWS Region Footprint](https://chrissnell.com/webflow/aws-vpc.png "AWS Region Footprint")
 
 # Kubernetes Architecture
-![Kubernetes Architecture](https://chrissnell.com/webflow/k8s-arch.png "Kubernetes Architecture")
+![Kubernetes Architecture](https://chrissnell.com/webflow/k8s-arch.png?2 "Kubernetes Architecture")
