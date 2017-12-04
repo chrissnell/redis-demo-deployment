@@ -1,0 +1,46 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        application: redis
+        version: 3.2.11
+    spec:
+      containers:
+      - name: redis
+        image: redis:3.2.11
+        ports:
+        - containerPort: 6379
+          protocol: TCP
+        volumeMounts:
+          - mountPath: /data
+            name: redis-data
+      - name: spiped
+        image: chrissnell/spiped:1.6.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 56379
+          protocol: TCP
+        volumeMounts:
+          - mountPath: /spiped
+            name: spiped-config
+        env:
+        - name: SPIPED_KEY
+          value: "/spiped/key"
+        - name: SPIPED_TARGET_SOCKET
+          value: "[127.0.0.1]:6379"
+        - name: SPIPED_SOURCE_SOCKET
+          value: "[0.0.0.0]:56379"
+        - name: SPIPED_MODE
+          value: "d"
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-data
+        - name: spiped-config
+          secret:
+            secretName: spiped-secret

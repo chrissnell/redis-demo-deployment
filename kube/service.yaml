@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    application: redis
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spiped
+spec:
+  ports:
+  - port: 56379
+    targetPort: 56379
+  selector:
+    application: redis
+  type: LoadBalancer
+
