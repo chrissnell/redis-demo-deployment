@@ -17,3 +17,20 @@ These clusters were built with [kops](https://github.com/kubernetes/kops).  For 
 * [kube/persistentvolumeclaim.yaml](https://github.com/chrissnell/redis-demo-deployment/blob/master/kube/persistentvolumeclaim.yaml) - The Kubernetes **PersistentVolumeClaim** object, which desribes any persistent storage that is needed by the Pods.
 * [kube/secret.yaml](https://github.com/chrissnell/redis-demo-deployment/blob/master/kube/secret.yaml) - The Kubernetes **Secret** object, which contains base64-encoded copies of any secrets that might need to be provided to the application at runtime.  Also occasionally used to provide configuration data.  I'm using it to provide the encryption key to spiped.
 * [kube/service.yaml](https://github.com/chrissnell/redis-demo-deployment/blob/master/kube/service.yaml) - The Kubernetes **Service** object, which describes how network traffic is directed towards the Pods of this Deployment.  In this case, I am using **LoadBalancer** objects to automatically provision EC2 load balancers that send traffic towards the pods.
+
+# AWS Architecture
+This architecture uses one Kubernetes cluster per AWS region.  Resources used in each region are as follows:
+
+* (1) Virtual Private Cloud (VPC)
+* (1) Internet Gateway
+* (3) Elastic Load Balancers for: K8S API, Redis, spiped
+* (1) Kubernetes master node EC2 instance (t2.medium)
+* (3) Kubernetes compute node EC2 instances (t2.large)
+* (1) Jumpbox EC2 instance (t2.small)
+* (3) Kubernetes compute node EBS volumes (128 GiB)
+* (1) Kubernetes master node EBS volume (64 GiB)
+* (1) Redis data EBS volume (5 GiB, sized for demo)
+* (1) Jumpbox EBS volume (8 GiB)
+* (2) etcd EBS volumes (20 GiB)
+
+![alt text](https://chrissnell.com/webflow/aws-vpc.png "AWS Region Footprint")
