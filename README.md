@@ -48,3 +48,63 @@ For this Redis infrastructure, I have built pods of a pair of Redis and spiped c
 This deployment uses a single instance of Redis per region, with the `us-east-1` region functioning as the master instance.  The instance in `eu-central-1` functions as a slave of the U.S.-based instance.  Standard master-slave replication is used and [spiped](https://github.com/Tarsnap/spiped) is used to encrypt this replication stream as it traverses regions.  
 
 In `us-east-1`, spiped functions in "encrypt" mode, connecting to the Redis instance on localhost and proxying this traffic to a listener that authenticates connecting clients and then provides encrypted connections for their traffic.  In `eu-central-1`, spiped functions in "decrypt" mode, connecting to the spiped instance in `us-east-1`, authenticating, then decrypting the stream and making it available as an unencrypted socket connection on localhost.  The Redis slave in `eu-central-1` connects to this local proxy to initiate its slaving.
+
+# Building this demo
+1. Install the [AWS CLI client](https://aws.amazon.com/cli/), if you haven't already.
+2. Set your `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables, as appropriate. 
+3. Ensure that your IAM role can attach full-access policies for EC2, Route53, S3, IAM, and VPC services.
+4. Install [kops](https://github.com/kubernetes/kops) via your preferred method.
+5. Create an IAM group for kops:
+```
+aws iam create-group --group-name kops
+```
+6. Attach policies to this new group:
+```
+aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess --group-name kops
+aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonRoute53FullAccess --group-name kops
+aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess --group-name kops
+aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/IAMFullAccess --group-name kops
+aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonVPCFullAccess --group-name kops
+```
+7. Create a kops IAM user and add them to the group:
+```
+aws iam create-user --user-name kops
+aws iam add-user-to-group --user-name kops --group-name kops
+```
+8. Create an access key for the user.  Save these keys locally and set them in your shell environment.
+```
+aws iam create-access-key --user-name kops
+```
+9. Create a S3 bucket to hold kops's state:
+```
+aws s3api create-bucket --bucket kops-state-store --region us-east-1
+aws s3api put-bucket-versioning --bucket kops-state-store --versioning-configuration Status=Enabled
+```
+10. Set the required `KOPS_STATE_STORE` environment variable, as appropriate:
+```
+export KOPS_STATE_STORE=s3://kops-state-store
+```
+11. Set some convenience variables in your environment as appropriate:
+```
+export NAME=us-east-2.k8s.local
+export BUILD_REGION=us-east-2
+export BUILD_ZONE=us-east-2c
+```
+12. Create the cluster manifest with kops:
+```
+kops create cluster \
+    --ssh-public-key=~/.ssh/id_rsa_webflow.pub \
+    --node-count 3 \
+    --zones ${BUILD_ZONE} \
+    --master-zones ${BUILD_ZONE} \
+    --node-size t2.large \
+    --master-size t2.medium \
+    --topology private \
+    --networking kopeio-vxlan \
+    ${NAME}
+```
+13. Edit the cluster and make the following changes: 1. Change authorization to `rbac: {}`.  2.  Set `loadbalancer.type` to `Internal`:
+```
+kops edit cluster ${NAME}
+```
+14. Obtain the correct CoreOS Container Linux AMI (**HVM type**) by visiting this page:  https://coreos.com/os/docs/latest/booting-on-ec2.html
