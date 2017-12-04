@@ -7,7 +7,7 @@ These clusters were built with [kops](https://github.com/kubernetes/kops).  For 
 
 # Components of this environment
 * [Redis](https://github.com/antirez/redis/) - The in-memory database.  I'm running the vanilla version from Docker Hub, which is built using the [community-maintained Dockerfiles](https://github.com/docker-library/redis).
-* [spiped](https://github.com/Tarsnap/spiped) - A simple authenticating, encrypted TCP proxy.  Used to proxy the Redis replication streams because [Redis does not support TLS](https://github.com/antirez/redis/issues/2178) :(
+* [spiped](https://github.com/Tarsnap/spiped) - A simple authenticating, encrypted TCP proxy.  Used to proxy the Redis replication streams because [Redis does not support TLS](https://github.com/antirez/redis/issues/2178). (what a fail...)
 * [Kubernetes](https://kubernetes.io/) - v1.8.4 - The orchestration framework of choice.  Spins up our applications as needed, reallocates resources as servers come off- and on-line, provisions storage, etc.  
 * [CoreOS Container Linux](https://coreos.com/os/docs/latest/) - The Linux distribution which runs on all Kubernetes servers.   Based on ChromeOS, I chose CoreOS because it offers a best-of-breed, curated installation of [Docker](https://www.docker.com/).  It also provides automatic software updates and is able to coordinate with Kubernetes to shift application loads around the cluster while individual cluster servers are updated and rebooted.
 * [Docker](https://www.docker.com/) - Packaging for the Redis and spiped applications.  Chosen because it provides a concise way to describe application distribution and execution from a human-readable text file.  Also provides convenient packaging and quick distribution of software updates.
