@@ -35,4 +35,7 @@ Resources used in each region are as follows:
 * (1) Jumpbox EBS volume (8 GiB)
 * (2) etcd EBS volumes (20 GiB)
 
-![alt text](https://chrissnell.com/webflow/aws-vpc.png "AWS Region Footprint")
+![AWS Region Footprint](https://chrissnell.com/webflow/aws-vpc.png "AWS Region Footprint")
+
+# Kubernetes Architecture
+![Kubernetes Architecture](https://chrissnell.com/webflow/k8s-arch.png "Kubernetes Architecture")
