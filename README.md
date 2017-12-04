@@ -108,3 +108,52 @@ kops create cluster \
 kops edit cluster ${NAME}
 ```
 14. Obtain the correct CoreOS Container Linux AMI (**HVM type**) by visiting this page:  https://coreos.com/os/docs/latest/booting-on-ec2.html
+15. Obtain the `OwnerID` for that AMI by plugging in the AMI ID in this command and running it:
+```
+aws ec2 describe-images --region ${BUILD_REGION} --image-id <AMI ID FROM ABOVE> --output table
+```
+16. Get the ImageID by plugging `OwnerID` from the previous command into this command and running it.  The image ID should look something like this:  `595879546273/CoreOS-stable-1520.9.0-hvm`:
+```
+aws ec2 describe-images --region=${BUILD_REGION} --owner=<OWNER ID FROM ABOVE>     --filters "Name=virtualization-type,Values=hvm"  "Name=name,Values=CoreOS-stable*" --query 'sort_by(Images,&CreationDate)[-1].{id:ImageLocation}' --output table
+```
+17. Edit your kops instance group and change the image to what you obtained in the previous step:
+```
+kops edit ig --name=${NAME} nodes
+```
+18. Build the cluster from the manifest that you generated earlier:
+```
+kops update cluster ${NAME} --yes
+```
+19. Build a Virtual Private Gateway and a Customer Gateway to provide VPN access to your new Kubernetes cluster.
+20. Alternatively, you can build a jumpbox using a generic EC2 instance.  Create a /24 subnet within the VPC for your jumpbox and add this subnet to your VPC's route table, giving it access to the K8S master and K8S node subnets.  Create a security group that allows inbound port 22 from anywhere.  Build a small instance in this subnet and security group and secure it appropriately.   Allocate an Elastic IP and associate it with the jumpbox's private IP.  Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) and kops and copy the contents of your `${HOME}/.kube` and `${HOME}/.kops` directories to the jumpbox.  
+21. Once you have a working VPN connection to the VPC, or a working jumpbox, it's time to build the Kubernetes objects.  Start by generating a base64-encoded secret for spiped:
+```
+dd if=/dev/urandom bs=32 count=1 |base64
+```
+22. Edit `kube/secret.yaml` put the output from the previous step as the value for `key:`.
+23. Create the secret and verify:
+```
+kubectl create -f secret.yaml
+kubectl get secrets
+```
+24. Create your persistent volume claim:
+```
+kubectl create -f persistentvolumeclaim.yaml
+kubectl get pvc
+```
+25. Create your deployment and verify that the pods were deployed:
+```
+kubectl create -f deployment.yaml
+kubectl get deploy
+kubectl get pods
+```
+26. Create the service that fronts the pods and verify that it was created:
+```
+kubectl create -f service.yaml
+kubectl get svc
+```
+27. Describe the spiped service to get the ELB name and port for your encrypted tunnel endpoint:
+```
+kubectl describe svc siped
+```
+
