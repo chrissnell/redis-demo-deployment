@@ -43,3 +43,8 @@ The most basic unit of an application in Kubernetes is a pod.  By definition, a 
 For this Redis infrastructure, I have built pods of a pair of Redis and spiped containers.  There is one pod per Kubernetes cluster and one Kubernetes cluster per AWS region.  These pods have an attached EBS volume that holds the Redis data store.  The pods are fronted by Kubernetes service objects (i.e. Elastic Load Balancers) to facilitate traffic ingress.
 
 ![Kubernetes Architecture](https://chrissnell.com/webflow/k8s-arch.png?2 "Kubernetes Architecture")
+
+# Redis Architecture
+This deployment uses a single instance of Redis per region, with the `us-east-1` region functioning as the master instance.  The instance in `eu-central-1` functions as a slave of the U.S.-based instance.  Standard master-slave replication is used and [spiped](https://github.com/Tarsnap/spiped) is used to encrypt this replication stream as it traverses regions.  
+
+In `us-east-1`, spiped functions in "encrypt" mode, connecting to the Redis instance on localhost and proxying this traffic to a listener that authenticates connecting clients and then provides encrypted connections for their traffic.  In `eu-central-1`, spiped functions in "decrypt" mode, connecting to the spiped instance in `us-east-1`, authenticating, then decrypting the stream and making it available as an unencrypted socket connection on localhost.  The Redis slave in `eu-central-1` connects to this local proxy to initiate its slaving.
