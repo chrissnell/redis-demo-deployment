@@ -35,7 +35,7 @@ Resources used in each region are as follows:
 * (1) Jumpbox EBS volume (8 GiB)
 * (2) etcd EBS volumes (20 GiB)
 
-![AWS Region Footprint](https://chrissnell.com/webflow/aws-vpc.png "AWS Region Footprint")
+![AWS Region Footprint](https://chrissnell.com/webflow/aws-vpc.png?2 "AWS Region Footprint")
 
 # Kubernetes Architecture
 The most basic unit of an application in Kubernetes is a pod.  By definition, a pod is an ephemeral instance of one or more interdependent applications and is constrained to a single node in the cluster.  When hardware failure or maintenance occurs, Kubernetes can rebuild a failed pod as a brand new pod on another node in the cluster.  When network-attached storage is used (such as AWS EBS), an application can be given a persistent disk volume that is attached to the pod and re-attached to a replacement pod, should the original pod become available.  
