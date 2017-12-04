@@ -19,7 +19,9 @@ These clusters were built with [kops](https://github.com/kubernetes/kops).  For 
 * [kube/service.yaml](https://github.com/chrissnell/redis-demo-deployment/blob/master/kube/service.yaml) - The Kubernetes **Service** object, which describes how network traffic is directed towards the Pods of this Deployment.  In this case, I am using **LoadBalancer** objects to automatically provision EC2 load balancers that send traffic towards the pods.
 
 # AWS Architecture
-This architecture uses one Kubernetes cluster per AWS region.  Resources used in each region are as follows:
+This architecture uses one Kubernetes cluster per AWS region.  For a two-region footprint, two complete Kubernetes clusters are used.  Because EBS volumes are restricted to a single availability zone (AZ), K8S compute nodes should be built such that there is sufficient node redundancy within a single AZ for **applications with persistent data needs**, such as Redis.  For stateless applications (e.g. typical microservice), the K8S compute nodes can be spread across multiple AZs and the pod replica count can be adjusted so that every pod is has replicas across the region's AZs.
+
+Resources used in each region are as follows:
 
 * (1) Virtual Private Cloud (VPC)
 * (1) Internet Gateway
