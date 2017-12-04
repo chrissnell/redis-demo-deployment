@@ -1,4 +1,4 @@
-# redis-demo-deployment
+# Multi-Regional AWS Redis Deployment
 This is an example deployment of Redis to AWS using a Kubernetes cluster.
 
 Obviously, an entire K8S cluster for a single Redis instance is absurd, but I'm using this as a demonstration of how I might build a larger infrastructue footprint. 
